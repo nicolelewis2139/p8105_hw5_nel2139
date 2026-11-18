@@ -75,3 +75,19 @@ birthday_results_df |>
 ```
 
 The probability that at least two people share a birthday increases as the group size increases. Interestingly, only about 23 people are needed for there to be a 50% chance that two people share a birthday, and with only 50 people, the chance increases to about 97%!
+
+## Problem 2
+
+Importing the data 
+
+```{r}
+full_df = 
+  tibble(
+    files = list.files("data/"),
+    path = str_c("data/", files)
+  ) |> 
+  mutate(data = map(path, read_csv)) |> 
+  unnest(data)
+```
+
+
