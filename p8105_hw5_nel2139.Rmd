@@ -171,4 +171,38 @@ sim_results_df |>
 
 [add write up]
 
+Plot of average estimate of mu and true mu 
+
+```{r}
+sim_results_df |> 
+  group_by(true_mu) |> 
+  summarize(avg_mu_hat = mean(mu_hat)) |> 
+  ggplot(aes(x = true_mu, y = avg_mu_hat)) +
+  geom_point() + 
+  geom_line() + 
+  scale_x_continuous(breaks = 0:6) + 
+  labs(
+    x = "True mu",
+    y = "Average estimated mu",
+    title = "Average estimated mu by true mu (all samples)"
+  )
+```
+
+Plot of average estimate of mu and true mu, for samples where null was rejected
+
+```{r}
+sim_results_df |> 
+  filter(reject == TRUE) |> 
+  group_by(true_mu) |> 
+  summarize(avg_mu_hat = mean(mu_hat)) |> 
+  ggplot(aes(x = true_mu, y = avg_mu_hat)) +
+  geom_point() + 
+  geom_line() + 
+  scale_x_continuous(breaks = 0:6) + 
+  labs(
+    x = "True mu",
+    y = "Average estimated mu",
+    title = "Average estimated mu by true mu (rejected null)"
+  )
+```
 
