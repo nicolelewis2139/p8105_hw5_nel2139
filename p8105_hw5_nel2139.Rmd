@@ -11,7 +11,8 @@ library(tidyverse)
 knitr::opts_chunk$set(
   fig.width = 6,
   fig.asp = .6,
-  out.width = "90%"
+  out.width = "90%",
+  dpi = 300
 )
 
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
@@ -29,6 +30,7 @@ scale_fill_discrete = scale_fill_viridis_d
 library(tidyverse)
 library(rvest)
 library(p8105.datasets)
+library(patchwork)
 
 source("source/birthday_repeated.R")
 source("source/sim_ttest.R")
@@ -169,12 +171,15 @@ sim_results_df |>
   )
 ```
 
-[add write up]
+When the true mu is 0, the null hypothesis is true, so the rejection rate of 0.049 reflects the Type I error rate (the probability of rejecting the null when it is true), which is consistent with the significance level of alpha = 0.05. From true mu values of 1 through 6, the null hypothesis is false, so the rejection rate reflects the power of the test. As seen in the graph, power increases as the effect size increases. When the true effect size is small, statistical power is low, so studies are less likely to detect a real effect. For example when mu = 1, power is low (0.198), meaning that the null hypothesis is rejected only 19.8% of the time, despite a true effect being present. In other words, there is an 80.2% chance of failing to detect a real effect. As the true effect size increases, the null hypothesis is rejected more frequently; 56.3% of the time at mu = 2, 87.9% at mu = 3, 98.9% at mu = 4, and 100% at mu = 5 and 6. In the context of scientific publication bias, studies with smaller true effect sizes are less likely to produce statistically significant results and, therefore, may be less likely to be published. 
+
 
 Plot of average estimate of mu and true mu 
 
 ```{r}
-sim_results_df |> 
+
+all_samples = 
+  sim_results_df |> 
   group_by(true_mu) |> 
   summarize(avg_mu_hat = mean(mu_hat)) |> 
   ggplot(aes(x = true_mu, y = avg_mu_hat)) +
@@ -184,14 +189,11 @@ sim_results_df |>
   labs(
     x = "True mu",
     y = "Average estimated mu",
-    title = "Average estimated mu by true mu (all samples)"
+    title = "All samples"
   )
-```
 
-Plot of average estimate of mu and true mu, for samples where null was rejected
-
-```{r}
-sim_results_df |> 
+null_rej_samples = 
+  sim_results_df |> 
   filter(reject == TRUE) |> 
   group_by(true_mu) |> 
   summarize(avg_mu_hat = mean(mu_hat)) |> 
@@ -202,7 +204,16 @@ sim_results_df |>
   labs(
     x = "True mu",
     y = "Average estimated mu",
-    title = "Average estimated mu by true mu (rejected null)"
+    title = "Null rejected samples"
   )
+
+mu_hat_mu_plot = 
+  all_samples + null_rej_samples +
+  plot_annotation(title = "Average estimated mu by true mu")
+mu_hat_mu_plot
 ```
+
+When considering all simulated samples, the average estimate of mu is approximately equal to the true value of mu across all effect sizes, indicating that the sample mean is an unbiased estimator of the population mean. However, when considering only samples for which the null hypothesis was rejected, the average estimated mu is not always approximately equal to the true mu. When the true effect size is relatively small (mu = 1), the average estimated mu is approximately 2.25, substantially overestimating the true effect. As the true effect size increases, this bias decreases, and the average estimated mu becomes closer to the true mu, becoming approximately equal to it for mu = 4, 5, and 6.
+
+This occurs because when the true effect size is small, power is low, and the null hypothesis is only rejected in samples where random variation produced an unusually large estimate of mu. By restricting the analysis to statistically significant results, we disproportionately select samples that overestimate the true effect. As power increases, more samples reject the null hypothesis, reducing this selection bias. In the context of scientific publication bias, underpowered studies examining small true effects are less likely to produce statistically significant results and, therefore, less likely to be published. Those that do achieve statistical significance are more likely to overestimate the true effect size. Consequently, if statistically significant findings are preferentially published, the scientific literature may present inflated estimates of small true effects.
 
