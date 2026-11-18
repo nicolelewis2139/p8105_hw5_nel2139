@@ -150,8 +150,25 @@ sim_results_df =
   ) |> 
   unnest(estimate_df) |> 
   mutate(reject = p_value <= 0.05)
-  
-  
-
 ```
+
+Plot of power and true mu 
+
+```{r}
+sim_results_df |> 
+  group_by(true_mu) |> 
+  summarize(power = mean(reject)) |> 
+  ggplot(aes(x = true_mu, y = power)) + 
+  geom_point() + 
+  geom_line() + 
+  scale_x_continuous(breaks = 0:6) + 
+  labs(
+    x = "True mu",
+    y = "Proportion of nulls rejected",
+    title = "Power of the one-sample t-test by true mu"
+  )
+```
+
+[add write up]
+
 
